@@ -2,82 +2,71 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BarberShop Pro - Agendamento</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Barbearia D'marcy</title>
     <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div class="container">
-        <nav class="nav-tabs">
-            <button onclick="switchTab('cliente')" id="tab-cli" class="active">AGENDAR</button>
-            <button onclick="switchTab('admin')" id="tab-adm">PAINEL</button>
-        </nav>
+    <header class="navbar">
+        <div class="logo-container" id="btn-admin">
+            <img src="https://i.ibb.co/zWPfDzwT/logo-barbearia.png" alt="Logo" class="logo-img">
+            <div class="logo-texto">BARBEARIA<span>D'MARCY</span></div>
+        </div>
+    </header>
 
-        <main id="view-cliente">
-            <header>
-                <h1>BarberShop <span>Pro</span></h1>
-                <p>Estilo e conveniência no seu tempo</p>
-            </header>
-
-            <form id="form-agendamento" class="card">
+    <main class="app-container">
+        <section class="control-panel">
+            <div class="input-row">
                 <div class="input-group">
-                    <label>Seu Nome</label>
-                    <input type="text" id="cli-nome" placeholder="Nome Completo" required>
-                </div>
-
-                <div class="input-group">
-                    <label>WhatsApp</label>
-                    <input type="tel" id="cli-tel" placeholder="(85) 9.9999-9999" required>
-                </div>
-
-                <div class="input-group">
-                    <label>Barbeiro Profissional</label>
-                    <select id="cli-barbeiro" required>
-                        <option value="" disabled selected>Quem vai te atender?</option>
-                        <option value="MATHEUS" data-phone="5585999999999">MATHEUS</option>
-                        <option value="JOÃO" data-phone="5585888888888">JOÃO</option>
+                    <label>PROFISSIONAL</label>
+                    <select id="profissional-seletor" onchange="carregarDados()">
+                        <option value="D'MARCY">D'MARCY</option>
+                        <option value="DOUGLAS">DOUGLAS</option>
                     </select>
                 </div>
-
                 <div class="input-group">
-                    <label>Serviço Desejado</label>
-                    <select id="cli-servico" required>
-                        <option value="" disabled selected>Escolha o serviço</option>
-                        <option value="DEGRADÊ" data-price="40">DEGRADÊ - R$ 40,00</option>
-                        <option value="BARBOTERAPIA" data-price="30">BARBOTERAPIA - R$ 30,00</option>
-                        <option value="COMBO" data-price="60">CORTE + BARBA - R$ 60,00</option>
+                    <label>SERVIÇO</label>
+                    <select id="servico-seletor">
+                        <option value="C. DEGRADÊ" data-preco="30.00">C. DEGRADÊ - R$ 30,00</option>
+                        <option value="DEGRADÊ + BARBA" data-preco="50.00">DEGRADÊ + BARBA - R$ 50,00</option>
+                        <option value="BARBA" data-preco="20.00">BARBA - R$ 20,00</option>
                     </select>
                 </div>
-
-                <div class="row">
-                    <div class="input-group">
-                        <label>Data</label>
-                        <input type="date" id="cli-data" required>
-                    </div>
-                    <div class="input-group">
-                        <label>Horário</label>
-                        <select id="cli-hora" required disabled>
-                            <option value="">Escolha a data</option>
-                        </select>
-                    </div>
-                </div>
-
-                <button type="submit" class="btn-primary" id="btn-submit">CONFIRMAR AGENDAMENTO</button>
-            </form>
-        </main>
-
-        <main id="view-admin" style="display: none;">
-            <div id="admin-auth" class="card auth-card">
-                <h3>Acesso Restrito</h3>
-                <input type="password" id="pass-admin" placeholder="Senha do Painel">
-                <button onclick="entrarAdmin()" class="btn-primary">ENTRAR</button>
             </div>
-
-            <div id="admin-painel" style="display: none;">
-                <div id="lista-agendamentos"></div>
+            <div class="input-group full-width">
+                <label>DATA</label>
+                <input type="date" id="data-seletor" onchange="carregarDados()">
             </div>
-        </main>
+        </section>
+
+        <div id="info-status" class="status-bar">Sincronizando...</div>
+        <section id="grade-horarios" class="grid-reserva"></section>
+    </main>
+
+    <div id="modal-admin" class="modal-overlay">
+        <div class="modal-content">
+            <h3>Acesso Admin</h3>
+            <input type="password" id="senha-admin" placeholder="Senha" class="input-field">
+            <div class="modal-actions">
+                <button onclick="verificarSenha()" class="btn-confirmar">ENTRAR</button>
+                <button onclick="fecharModalAdmin()" class="btn-cancelar">Sair</button>
+            </div>
+        </div>
     </div>
+
+    <div id="modal-reserva" class="modal-overlay">
+        <div class="modal-content">
+            <h3>Confirmar</h3>
+            <div id="resumo-agendamento" class="summary-box"></div>
+            <input type="text" id="nome-cliente" placeholder="Seu Nome" class="input-field">
+            <div class="modal-actions">
+                <button onclick="processarAcao()" id="btn-confirmar-modal" class="btn-confirmar">CONFIRMAR</button>
+                <button onclick="fecharModal()" class="btn-cancelar">Voltar</button>
+            </div>
+        </div>
+    </div>
+
     <script src="script.js"></script>
 </body>
 </html>
