@@ -2,69 +2,119 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Barbearia D'marcy</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BarberShop | Agendamento Profissional</title>
     <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
 </head>
 <body>
-    <header class="navbar">
-        <div class="logo-container" id="btn-admin">
-            <img src="https://i.ibb.co/zWPfDzwT/logo-barbearia.png" alt="Logo" class="logo-img">
-            <div class="logo-texto">BARBEARIA<span>D'MARCY</span></div>
-        </div>
+
+    <header>
+        <h1 id="logo-admin" onclick="handleAdminClick()">BarberShop</h1>
+        <p>Agende seu horário</p>
     </header>
 
-    <main class="app-container">
-        <section class="control-panel">
-            <div class="input-row">
-                <div class="input-group">
-                    <label>PROFISSIONAL</label>
-                    <select id="profissional-seletor" onchange="carregarDados()">
-                        <option value="D'MARCY">D'MARCY</option>
-                        <option value="DOUGLAS">DOUGLAS</option>
-                    </select>
-                </div>
-                <div class="input-group">
-                    <label>SERVIÇO</label>
-                    <select id="servico-seletor">
-                        <option value="C. DEGRADÊ" data-preco="30.00">C. DEGRADÊ - R$ 30,00</option>
-                        <option value="DEGRADÊ + BARBA" data-preco="50.00">DEGRADÊ + BARBA - R$ 50,00</option>
-                        <option value="BARBA" data-preco="20.00">BARBA - R$ 20,00</option>
-                    </select>
+    <div class="container">
+        <section id="step1" class="step active">
+            <div class="card">
+                <label>Escolha o Barbeiro</label>
+                <select id="barbeiro">
+                    <option value="Matheus">Matheus</option>
+                    <option value="João">João</option>
+                </select>
+            </div>
+
+            <div class="card">
+                <label>Data do Atendimento</label>
+                <input type="date" id="data-agendamento">
+            </div>
+
+            <div class="card">
+                <label>Selecione o Serviço</label>
+                <div class="options-grid">
+                    <label class="service-card">
+                        <input type="radio" name="corte" value="Corte Degradê" data-valor="30" checked>
+                        <div class="card-content">
+                            <div class="img-container">
+                                <img src="https://i.ibb.co/gFVDb325/degrad.png" alt="Corte Degradê">
+                            </div>
+                            <div class="service-info">
+                                <span class="service-name">Degradê</span>
+                                <span class="service-price">R$ 30,00</span>
+                            </div>
+                        </div>
+                    </label>
+
+                    <label class="service-card">
+                        <input type="radio" name="corte" value="Nevou" data-valor="80">
+                        <div class="card-content">
+                            <div class="img-container">
+                                <img src="https://i.ibb.co/1GHR4wHy/nevou.png" alt="Nevou">
+                            </div>
+                            <div class="service-info">
+                                <span class="service-name">Nevou + Corte Degradê</span>
+                                <span class="service-price">R$ 100,00</span>
+                            </div>
+                        </div>
+                    </label>
+
+                    <label class="service-card">
+                        <input type="radio" name="corte" value="Corte + Barba" data-valor="50">
+                        <div class="card-content">
+                            <div class="img-container">
+                                <img src="https://i.ibb.co/m55s3x7d/corte-barba.png" alt="Corte e Barba">
+                            </div>
+                            <div class="service-info">
+                                <span class="service-name">Corte + Barba</span>
+                                <span class="service-price">R$ 50,00</span>
+                            </div>
+                        </div>
+                    </label>
+
+                    <label class="service-card">
+                        <input type="radio" name="corte" value="Corte Social" data-valor="30">
+                        <div class="card-content">
+                            <div class="img-container">
+                                <img src="https://i.ibb.co/Q3bx5BHr/CORTE-SOCIAL.png" alt="Corte Social">
+                            </div>
+                            <div class="service-info">
+                                <span class="service-name">Corte Social</span>
+                                <span class="service-price">R$ 30,00</span>
+                            </div>
+                        </div>
+                    </label>
                 </div>
             </div>
-            <div class="input-group full-width">
-                <label>DATA</label>
-                <input type="date" id="data-seletor" onchange="carregarDados()">
+            <button class="main-btn btn-next" onclick="irParaEtapa2()">PRÓXIMO: VER HORÁRIOS</button>
+        </section>
+
+        <section id="step2" class="step">
+            <button class="btn-back" onclick="irParaEtapa1()">← Voltar</button>
+            <div class="card">
+                <h3 id="titulo-horario">Horários Disponíveis</h3>
+                <div id="grid-horarios" class="grid-horarios"></div>
             </div>
         </section>
 
-        <div id="info-status" class="status-bar">Sincronizando...</div>
-        <section id="grade-horarios" class="grid-reserva"></section>
-    </main>
-
-    <div id="modal-admin" class="modal-overlay">
-        <div class="modal-content">
-            <h3>Acesso Admin</h3>
-            <input type="password" id="senha-admin" placeholder="Senha" class="input-field">
-            <div class="modal-actions">
-                <button onclick="verificarSenha()" class="btn-confirmar">ENTRAR</button>
-                <button onclick="fecharModalAdmin()" class="btn-cancelar">Sair</button>
+        <section id="step3" class="step">
+            <button class="btn-back" onclick="irParaEtapa2()">← Voltar</button>
+            <div class="card">
+                <h3>Resumo do Agendamento</h3>
+                <div id="resumo-final" class="resumo-box"></div>
+                <label>Nome Completo</label>
+                <input type="text" id="nome-cliente" placeholder="Como devemos te chamar?">
             </div>
-        </div>
-    </div>
+            <button class="main-btn btn-whatsapp" onclick="finalizar()">CONFIRMAR AGENDAMENTO</button>
+        </section>
 
-    <div id="modal-reserva" class="modal-overlay">
-        <div class="modal-content">
-            <h3>Confirmar</h3>
-            <div id="resumo-agendamento" class="summary-box"></div>
-            <input type="text" id="nome-cliente" placeholder="Seu Nome" class="input-field">
-            <div class="modal-actions">
-                <button onclick="processarAcao()" id="btn-confirmar-modal" class="btn-confirmar">CONFIRMAR</button>
-                <button onclick="fecharModal()" class="btn-cancelar">Voltar</button>
+        <section id="step-admin" class="step">
+            <button class="btn-back" onclick="irParaEtapa1()">SAIR DO ADMIN</button>
+            <div class="admin-dashboard">
+                <div class="stat-card">Hoje <span id="fat-hoje">R$ 0</span></div>
+                <div class="stat-card">Prev. Mês <span id="fat-mes">R$ 0</span></div>
             </div>
-        </div>
+            <h3>Agenda de Clientes</h3>
+            <div id="admin-lista-reservas"></div>
+        </section>
     </div>
 
     <script src="script.js"></script>
