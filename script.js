@@ -1,219 +1,140 @@
-/**
- * SISTEMA DE AGENDAMENTO - BARBEARIA D'MARCY
- * Versão Final: Correção de Exclusão e Sincronização Real-Time
- */
+// Configurações de Horários
+const horariosPadrao = ["09:00", "09:30", "10:00", "10:30", "11:00", "11:30", "14:00", "14:30", "15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00"];
+let bancoDados = JSON.parse(localStorage.getItem('barber_data')) || [];
+let agendamento = {};
+let seqAdmin = 0;
 
-// 1. CONFIGURAÇÕES GERAIS
-const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzfcC8rOGoZ89vDzyHHNiVKLkDU1O4TgQYBzIcElpF39nw5qZWpedkpU1u0PjXmbK7g/exec"; // Certifique-se de usar a URL da 'Nova Versão'
-const SENHA_MESTRA = "2024";
+// Configurar Data Inicial
+const inputData = document.getElementById('data-agendamento');
+const dataHoje = new Date().toISOString().split('T')[0];
+inputData.value = dataHoje;
+inputData.min = dataHoje;
 
-let isAdmin = false;
-let clickCount = 0;
-let clickTimer;
-let agendamentosDB = [];
-let agendamentoPendente = {};
-
-// 2. CONTROLE DE ACESSO ADMIN (5 Cliques na Logo)
-document.getElementById('btn-admin').addEventListener('click', () => {
-    clickCount++;
-    clearTimeout(clickTimer);
-    clickTimer = setTimeout(() => { clickCount = 0; }, 1000);
-
-    if (clickCount === 5) {
-        clickCount = 0;
-        if (isAdmin) {
-            isAdmin = false;
-            document.body.classList.remove('admin-active');
-            alert("Modo Admin Desativado.");
-            renderizarHorarios();
-        } else {
-            document.getElementById('modal-admin').style.display = 'flex';
-        }
-    }
-});
-
-function verificarSenha() {
-    const input = document.getElementById('senha-admin');
-    if (input.value === SENHA_MESTRA) {
-        isAdmin = true;
-        document.body.classList.add('admin-active');
-        document.getElementById('modal-admin').style.display = 'none';
-        input.value = '';
-        alert("Acesso Admin Liberado!");
-        renderizarHorarios();
-    } else {
-        alert("Senha Incorreta!");
-        input.value = '';
-    }
+// Fluxo de Navegação
+function mudarTela(id) {
+    document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
 }
 
-function fecharModalAdmin() {
-    document.getElementById('modal-admin').style.display = 'none';
-    document.getElementById('senha-admin').value = '';
-}
+function irParaEtapa1() { mudarTela('step1'); }
 
-// 3. COMUNICAÇÃO COM A PLANILHA (GET)
-async function carregarDados() {
-    const statusBox = document.getElementById('info-status');
-    statusBox.innerText = "Sincronizando agenda...";
+function irParaEtapa2() {
+    const servicoAtivo = document.querySelector('input[name="corte"]:checked');
+    if (!servicoAtivo) return alert("Selecione um serviço.");
 
-    try {
-        const response = await fetch(WEB_APP_URL);
-        const dadosRaw = await response.json();
-        
-        // Normaliza as datas para o formato AAAA-MM-DD para evitar erros de match
-        agendamentosDB = dadosRaw.map(item => ({
-            ...item,
-            data: item.data.includes('T') ? item.data.split('T')[0] : item.data
-        }));
-        
-        renderizarHorarios();
-    } catch (error) {
-        console.error("Erro ao buscar dados:", error);
-        statusBox.innerText = "Erro ao carregar dados.";
-    }
-}
-
-// 4. RENDERIZAÇÃO DA INTERFACE
-function renderizarHorarios() {
-    const grade = document.getElementById('grade-horarios');
-    const dataSelecionada = document.getElementById('data-seletor').value;
-    const profSelecionado = document.getElementById('profissional-seletor').value;
+    agendamento = {
+        barbeiro: document.getElementById('barbeiro').value,
+        data: inputData.value,
+        servico: servicoAtivo.value,
+        valor: servicoAtivo.dataset.valor
+    };
     
-    const horariosPadrao = ["09:00", "09:30", "10:00", "10:30", "11:00", "14:00", "14:30", "15:00", "16:00", "17:00", "18:00", "19:00"];
+    document.getElementById('titulo-horario').innerText = `Horários para ${agendamento.data.split('-').reverse().join('/')}`;
+    gerarGradeHorarios();
+    mudarTela('step2');
+}
 
-    grade.innerHTML = '';
+// Lógica de Disponibilidade
+function gerarGradeHorarios() {
+    const grid = document.getElementById('grid-horarios');
+    grid.innerHTML = '';
+    
+    const agora = new Date();
+    const horaAgora = agora.getHours().toString().padStart(2, '0') + ":" + agora.getMinutes().toString().padStart(2, '0');
 
-    horariosPadrao.forEach(hora => {
-        const agendamento = agendamentosDB.find(a => 
-            String(a.data).trim() === String(dataSelecionada).trim() && 
-            String(a.hora).trim() === String(hora).trim() && 
-            String(a.prof).trim() === String(profSelecionado).trim()
-        );
+    horariosPadrao.forEach(h => {
+        const btn = document.createElement('button');
+        btn.innerText = h;
+        btn.className = 'time-btn';
 
-        const card = document.createElement('div');
-        card.className = `card ${agendamento ? 'ocupado' : ''}`;
-        
-        let botaoHTML = "";
-        if (agendamento) {
-            botaoHTML = isAdmin 
-                ? `<button class="btn-acao btn-excluir" onclick="excluirHorario('${hora}')">EXCLUIR</button>`
-                : `<button class="btn-acao" style="background:#ccc; color:#666" disabled>OCUPADO</button>`;
+        const ocupado = bancoDados.find(r => r.data === agendamento.data && r.horario === h && r.barbeiro === agendamento.barbeiro);
+        const passado = (agendamento.data === dataHoje && h < horaAgora);
+
+        if (ocupado) {
+            btn.classList.add('reservado');
+            btn.innerText = "Reservado";
+        } else if (passado) {
+            btn.classList.add('encerrado');
+            btn.innerText = "Encerrado";
         } else {
-            botaoHTML = `<button class="btn-acao" onclick="abrirModal('${hora}')">AGENDAR</button>`;
+            btn.classList.add('disponivel');
+            btn.onclick = () => {
+                agendamento.horario = h;
+                prepararConfirmacao();
+            };
         }
+        grid.appendChild(btn);
+    });
+}
 
-        card.innerHTML = `
-            <div>
-                <span class="hora">${hora}</span>
-                <span class="status-text">${agendamento ? 'Reserva: ' + agendamento.nome : 'DISPONÍVEL'}</span>
+function prepararConfirmacao() {
+    const dBr = agendamento.data.split('-').reverse().join('/');
+    document.getElementById('resumo-final').innerHTML = `
+        <p>🧔 <strong>Barbeiro:</strong> ${agendamento.barbeiro}</p>
+        <p>✂️ <strong>Serviço:</strong> ${agendamento.servico}</p>
+        <p>📅 <strong>Data:</strong> ${dBr}</p>
+        <p>⏰ <strong>Horário:</strong> ${agendamento.horario}</p>
+        <p>💰 <strong>Valor:</strong> R$ ${agendamento.valor},00</p>
+    `;
+    mudarTela('step3');
+}
+
+// WhatsApp e Persistência
+function finalizar() {
+    const nome = document.getElementById('nome-cliente').value;
+    if (!nome) return alert("Por favor, informe seu nome.");
+
+    agendamento.cliente = nome;
+    bancoDados.push({...agendamento});
+    localStorage.setItem('barber_data', JSON.stringify(bancoDados));
+
+    const msg = `Olá, agendei o horário ${agendamento.horario} no dia ${agendamento.data.split('-').reverse().join('/')}. Corte: ${agendamento.servico} com ${agendamento.barbeiro}. Nome: ${nome}`;
+    const link = `https://api.whatsapp.com/send?phone=5599999999999&text=${encodeURIComponent(msg)}`;
+    
+    window.open(link, '_blank');
+    location.reload(); 
+}
+
+// Área do Barbeiro (Admin)
+function handleAdminClick() {
+    seqAdmin++;
+    if (seqAdmin === 5) {
+        seqAdmin = 0;
+        const p = prompt("Senha de acesso:");
+        if (p === "1234") abrirPainelAdmin();
+    }
+}
+
+function abrirPainelAdmin() {
+    mudarTela('step-admin');
+    const container = document.getElementById('admin-lista-reservas');
+    container.innerHTML = '';
+    
+    let hojeTotal = 0;
+    let mesTotal = 0;
+    const mesAtual = new Date().getMonth();
+
+    bancoDados.sort((a,b) => (a.data + a.horario).localeCompare(b.data + b.horario)).forEach((r, idx) => {
+        const dR = new Date(r.data);
+        if(r.data === dataHoje) hojeTotal += parseFloat(r.valor);
+        if(dR.getMonth() === mesAtual) mesTotal += parseFloat(r.valor);
+
+        container.innerHTML += `
+            <div class="admin-item">
+                <span><strong>${r.horario}</strong> - ${r.cliente}<br><small>${r.data} | ${r.barbeiro}</small></span>
+                <button class="btn-del" onclick="remover(${idx})">Excluir</button>
             </div>
-            ${botaoHTML}
         `;
-        grade.appendChild(card);
     });
 
-    document.getElementById('info-status').innerText = `Agenda: ${profSelecionado} | ${dataSelecionada}`;
+    document.getElementById('fat-hoje').innerText = `R$ ${hojeTotal}`;
+    document.getElementById('fat-mes').innerText = `R$ ${mesTotal}`;
 }
 
-// 5. FUNÇÕES DE AGENDAMENTO (POST)
-function abrirModal(hora) {
-    const seletorServ = document.getElementById('servico-seletor');
-    agendamentoPendente = {
-        hora: hora,
-        prof: document.getElementById('profissional-seletor').value,
-        data: document.getElementById('data-seletor').value,
-        servico: seletorServ.value,
-        preco: seletorServ.options[seletorServ.selectedIndex].getAttribute('data-preco')
-    };
-
-    document.getElementById('resumo-agendamento').innerHTML = `
-        <strong>Profissional:</strong> ${agendamentoPendente.prof}<br>
-        <strong>Serviço:</strong> ${agendamentoPendente.servico}<br>
-        <strong>Horário:</strong> ${agendamentoPendente.hora}
-    `;
-    document.getElementById('modal-reserva').style.display = 'flex';
-}
-
-async function processarAcao() {
-    const nomeCliente = document.getElementById('nome-cliente').value.trim();
-    if (!nomeCliente) return alert("Por favor, digite seu nome.");
-
-    const btn = document.getElementById('btn-confirmar-modal');
-    btn.innerText = "SALVANDO...";
-    btn.disabled = true;
-
-    // Monta a URL com parâmetros (Método mais seguro para o Google Scripts)
-    const queryString = new URLSearchParams({
-        data: agendamentoPendente.data,
-        hora: agendamentoPendente.hora,
-        prof: agendamentoPendente.prof,
-        servico: agendamentoPendente.servico,
-        nome: nomeCliente,
-        valor: agendamentoPendente.preco
-    }).toString();
-
-    // Atualização Otimista (mostra na tela antes de confirmar no banco)
-    agendamentosDB.push({ ...agendamentoPendente, nome: nomeCliente });
-    renderizarHorarios();
-
-    try {
-        await fetch(`${WEB_APP_URL}?${queryString}`, { method: 'POST' });
-        
-        // Envio para WhatsApp
-        const msgWhatsapp = `Agendamento Barbearia D'marcy:%0A*Cliente:* ${nomeCliente}%0A*Serviço:* ${agendamentoPendente.servico}%0A*Hora:* ${agendamentoPendente.hora}`;
-        window.open(`https://wa.me/5585986950225?text=${msgWhatsapp}`, '_blank');
-
-        fecharModal();
-    } catch (error) {
-        console.error("Erro ao salvar agendamento:", error);
-        alert("Erro ao salvar na planilha, mas o aviso foi enviado.");
-        fecharModal();
+function remover(idx) {
+    if(confirm("Deseja cancelar esta reserva?")) {
+        bancoDados.splice(idx, 1);
+        localStorage.setItem('barber_data', JSON.stringify(bancoDados));
+        abrirPainelAdmin();
     }
 }
-
-// 6. FUNÇÃO DE EXCLUSÃO (CORRIGIDA)
-async function excluirHorario(hora) {
-    if (!confirm("Confirmar exclusão definitiva na planilha?")) return;
-
-    const dataSel = document.getElementById('data-seletor').value;
-    const profSel = document.getElementById('profissional-seletor').value;
-
-    // Remove do visual imediatamente
-    agendamentosDB = agendamentosDB.filter(a => !(
-        String(a.data).trim() === String(dataSel).trim() && 
-        String(a.hora).trim() === String(hora).trim() && 
-        String(a.prof).trim() === String(profSel).trim()
-    ));
-    renderizarHorarios();
-
-    // Envia comando DELETE via URL
-    const queryDelete = new URLSearchParams({
-        action: "DELETE",
-        data: dataSel,
-        hora: hora,
-        prof: profSel
-    }).toString();
-
-    try {
-        await fetch(`${WEB_APP_URL}?${queryDelete}`, { method: 'POST' });
-        console.log("Exclusão processada na planilha.");
-    } catch (error) {
-        console.error("Erro na exclusão:", error);
-        alert("Erro de conexão. Recarregue a página.");
-        carregarDados();
-    }
-}
-
-// 7. UTILITÁRIOS E INICIALIZAÇÃO
-function fecharModal() {
-    document.getElementById('modal-reserva').style.display = 'none';
-    document.getElementById('nome-cliente').value = '';
-    const btn = document.getElementById('btn-confirmar-modal');
-    btn.innerText = "CONFIRMAR";
-    btn.disabled = false;
-}
-
-// Define data de hoje no seletor e carrega dados
-document.getElementById('data-seletor').valueAsDate = new Date();
-carregarDados();
