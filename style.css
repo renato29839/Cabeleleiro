@@ -15,6 +15,7 @@ h1 { color: var(--primary); text-transform: uppercase; letter-spacing: 3px; curs
 .container { width: 100%; max-width: 450px; }
 .step { display: none; }
 .step.active { display: block; animation: fadeIn 0.3s ease; }
+
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
 .card { background: var(--card); padding: 20px; border-radius: 12px; margin-bottom: 15px; border: 1px solid #333; }
@@ -26,9 +27,7 @@ select, input[type="text"], input[type="date"] {
 
 /* GRID DE SERVIÇOS */
 .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-
-.service-card { position: relative; cursor: pointer; transition: transform 0.1s; }
-.service-card:active { transform: scale(0.96); }
+.service-card { position: relative; cursor: pointer; }
 .service-card input { position: absolute; opacity: 0; }
 
 .card-content { 
@@ -36,32 +35,14 @@ select, input[type="text"], input[type="date"] {
     border: 2px solid transparent; transition: 0.3s; height: 100%;
 }
 
-.img-container { 
-    width: 100%; 
-    height: 120px; /* Altura fixa para manter o padrão visual */
-    background: #252525; /* Fundo combinando com o card caso a imagem demore a carregar */
-    display: flex; 
-    align-items: center; 
-    justify-content: center; 
-    overflow: hidden; /* Garante que nada saia para fora das bordas arredondadas */
-}
-
-.img-container img { 
-    width: 100%; 
-    height: 100%; 
-    object-fit: cover; /* PREENCHIMENTO TOTAL: Remove as bordas pretas */
-    object-position: center; /* Mantém o foco da foto no meio */
-}
+.img-container { width: 100%; height: 100px; background: #333; }
+.img-container img { width: 100%; height: 100%; object-fit: cover; }
 
 .service-info { padding: 10px; text-align: center; }
-.service-name { display: block; font-weight: bold; font-size: 0.85rem; color: #fff; }
-.service-price { display: block; color: var(--primary); font-size: 0.8rem; margin-top: 4px; }
+.service-name { display: block; font-weight: bold; font-size: 0.8rem; }
+.service-price { display: block; color: var(--primary); font-size: 0.75rem; }
 
-.service-card input:checked + .card-content { 
-    border-color: var(--primary); 
-    background: #333; 
-    box-shadow: 0 0 10px rgba(212, 175, 55, 0.2);
-}
+.service-card input:checked + .card-content { border-color: var(--primary); background: #333; }
 
 /* HORÁRIOS */
 .grid-horarios { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
@@ -71,17 +52,14 @@ select, input[type="text"], input[type="date"] {
 .time-btn.encerrado { background: #222; color: #555; cursor: not-allowed; }
 
 /* BOTÕES */
-.main-btn { width: 100%; padding: 18px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 10px; transition: 0.3s; }
+.main-btn { width: 100%; padding: 18px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 10px; }
 .btn-next { background: var(--primary); color: #000; }
-.btn-next:hover { opacity: 0.9; }
 .btn-whatsapp { background: var(--success); color: white; }
-.btn-back { background: none; color: var(--primary); border: 1px solid var(--primary); padding: 5px 10px; border-radius: 4px; margin-bottom: 10px; cursor: pointer; font-size: 0.8rem; }
-
-.resumo-box { line-height: 1.8; margin-bottom: 15px; background: #252525; padding: 15px; border-radius: 8px; }
+.btn-back { background: none; color: var(--primary); border: 1px solid var(--primary); padding: 5px 10px; border-radius: 4px; margin-bottom: 10px; cursor: pointer; }
 
 /* ADMIN */
 .admin-dashboard { display: flex; justify-content: space-between; margin-bottom: 15px; }
 .stat-card { background: var(--card); padding: 15px; border-radius: 8px; width: 48%; text-align: center; border-bottom: 2px solid var(--primary); }
 .stat-card span { display: block; color: var(--primary); font-size: 1.2rem; font-weight: bold; }
-.admin-item { background: #2a2a2a; padding: 12px; border-radius: 8px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; border-left: 3px solid var(--primary); }
+.admin-item { background: #2a2a2a; padding: 12px; border-radius: 8px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
 .btn-del { background: #ff4444; color: white; border: none; padding: 5px 8px; border-radius: 4px; cursor: pointer; }
