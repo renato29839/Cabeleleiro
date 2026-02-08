@@ -9,7 +9,7 @@
 <body>
 
     <header>
-        <h1 id="logo-admin" onclick="handleAdminClick()">BarberShop</h1>
+        <h1 id="logo-admin">BarberShop</h1>
         <p>Agende seu horário</p>
     </header>
 
@@ -45,13 +45,13 @@
                     </label>
 
                     <label class="service-card">
-                        <input type="radio" name="corte" value="Nevou" data-valor="80">
+                        <input type="radio" name="corte" value="Nevou" data-valor="100">
                         <div class="card-content">
                             <div class="img-container">
                                 <img src="https://i.ibb.co/1GHR4wHy/nevou.png" alt="Nevou">
                             </div>
                             <div class="service-info">
-                                <span class="service-name">Nevou + Corte Degradê</span>
+                                <span class="service-name">Nevou + Corte</span>
                                 <span class="service-price">R$ 100,00</span>
                             </div>
                         </div>
@@ -84,11 +84,11 @@
                     </label>
                 </div>
             </div>
-            <button class="main-btn btn-next" onclick="irParaEtapa2()">PRÓXIMO: VER HORÁRIOS</button>
+            <button class="main-btn btn-next" id="btn-ir-etapa2">PRÓXIMO: VER HORÁRIOS</button>
         </section>
 
         <section id="step2" class="step">
-            <button class="btn-back" onclick="irParaEtapa1()">← Voltar</button>
+            <button class="btn-back" id="btn-voltar-etapa1">← Voltar</button>
             <div class="card">
                 <h3 id="titulo-horario">Horários Disponíveis</h3>
                 <div id="grid-horarios" class="grid-horarios"></div>
@@ -96,27 +96,27 @@
         </section>
 
         <section id="step3" class="step">
-            <button class="btn-back" onclick="irParaEtapa2()">← Voltar</button>
+            <button class="btn-back" id="btn-voltar-etapa2">← Voltar</button>
             <div class="card">
                 <h3>Resumo do Agendamento</h3>
                 <div id="resumo-final" class="resumo-box"></div>
                 <label>Nome Completo</label>
                 <input type="text" id="nome-cliente" placeholder="Como devemos te chamar?">
             </div>
-            <button class="main-btn btn-whatsapp" onclick="finalizar()">CONFIRMAR AGENDAMENTO</button>
+            <button class="main-btn btn-whatsapp" id="btn-finalizar">CONFIRMAR AGENDAMENTO</button>
         </section>
 
         <section id="step-admin" class="step">
-            <button class="btn-back" onclick="irParaEtapa1()">SAIR DO ADMIN</button>
+            <button class="btn-back" id="btn-sair-admin">SAIR DO ADMIN</button>
             <div class="admin-dashboard">
                 <div class="stat-card">Hoje <span id="fat-hoje">R$ 0</span></div>
-                <div class="stat-card">Prev. Mês <span id="fat-mes">R$ 0</span></div>
+                <div class="stat-card">Mês Atual <span id="fat-mes">R$ 0</span></div>
             </div>
             <h3>Agenda de Clientes</h3>
             <div id="admin-lista-reservas"></div>
         </section>
     </div>
 
-    <script src="script.js"></script>
+    <script type="module" src="script.js"></script>
 </body>
 </html>
