@@ -24,12 +24,10 @@ const dataHoje = new Date().toISOString().split('T')[0];
 inputData.value = dataHoje;
 inputData.min = dataHoje;
 
-// Sincronização em tempo real
+// Monitoramento do banco em tempo real
 onValue(ref(db, 'agendamentos'), (snapshot) => {
     bancoDadosFirebase = snapshot.val() || {};
-    if (document.getElementById('step-admin').classList.contains('active')) {
-        abrirPainelAdmin();
-    }
+    if (document.getElementById('step-admin').classList.contains('active')) abrirPainelAdmin();
 });
 
 function mudarTela(id) {
@@ -38,7 +36,7 @@ function mudarTela(id) {
     window.scrollTo(0, 0);
 }
 
-// Gerador de Grade de Horários
+// Lógica de bloqueio automático de horários
 window.gerarGradeHorarios = function() {
     const grid = document.getElementById('grid-horarios');
     grid.innerHTML = '';
@@ -50,6 +48,7 @@ window.gerarGradeHorarios = function() {
         btn.innerText = h;
         btn.className = 'time-btn';
 
+        // Verifica se o barbeiro escolhido já tem agendamento nesta data e hora
         const ocupado = Object.values(bancoDadosFirebase).find(r => 
             r.data === agendamento.data && r.horario === h && r.barbeiro === agendamento.barbeiro
         );
@@ -88,7 +87,7 @@ async function finalizar() {
     const nome = document.getElementById('nome-cliente').value;
     const tel = document.getElementById('tel-cliente').value.replace(/\D/g, '');
 
-    if (!nome) return alert("Informe seu nome.");
+    if (!nome) return alert("Por favor, informe seu nome.");
     if (tel.length < 10) return alert("Informe um WhatsApp válido.");
 
     agendamento.cliente = nome;
@@ -96,19 +95,19 @@ async function finalizar() {
 
     try {
         await push(ref(db, 'agendamentos'), agendamento);
-        alert("Agendamento realizado! Redirecionando...");
+        alert("Agendamento confirmado!");
         
+        // Mensagem automática para o WhatsApp da barbearia
         const msg = `Olá, agendei o horário ${agendamento.horario} no dia ${agendamento.data.split('-').reverse().join('/')}. Serviço: ${agendamento.servico}. Nome: ${nome}`;
-        const link = `https://api.whatsapp.com/send?phone=5599999999999&text=${encodeURIComponent(msg)}`;
-        window.open(link, '_blank');
+        window.open(`https://api.whatsapp.com/send?phone=5599999999999&text=${encodeURIComponent(msg)}`, '_blank');
         
         location.reload();
     } catch (error) {
-        alert("Erro ao salvar: " + error.message);
+        alert("Erro ao salvar agendamento: " + error.message);
     }
 }
 
-// Painel Administrativo
+// Painel do Barbeiro
 function abrirPainelAdmin() {
     const container = document.getElementById('admin-lista-reservas');
     container.innerHTML = '';
@@ -121,23 +120,23 @@ function abrirPainelAdmin() {
     );
 
     listaOrdenada.forEach(([id, r]) => {
-        const dR = new Date(r.data);
         if(r.data === dataHoje) hojeTotal += parseFloat(r.valor);
+        const dR = new Date(r.data);
         if(dR.getMonth() === mesAtual) mesTotal += parseFloat(r.valor);
 
-        // API de confirmação para o barbeiro
+        // API para o barbeiro confirmar com o cliente
         const msgConfirm = `Olá ${r.cliente}, confirmamos seu horário na BarberShop dia ${r.data.split('-').reverse().join('/')} às ${r.horario} para o serviço ${r.servico}. Até lá!`;
-        const linkConfirm = `https://api.whatsapp.com/send?phone=55${r.telefone}&text=${encodeURIComponent(msgConfirm)}`;
+        const linkWpp = `https://api.whatsapp.com/send?phone=55${r.telefone}&text=${encodeURIComponent(msgConfirm)}`;
 
         const item = document.createElement('div');
         item.className = 'admin-item';
         item.innerHTML = `
             <div style="flex:1">
-                <strong>${r.horario}</strong> - ${r.cliente}<br>
+                <strong>${r.horario} - ${r.cliente}</strong><br>
                 <small>${r.data} | ${r.barbeiro} | ${r.servico}</small>
             </div>
             <div style="display:flex; gap:5px;">
-                <a href="${linkConfirm}" target="_blank" class="btn-api-wpp">Confirmar</a>
+                <a href="${linkWpp}" target="_blank" class="btn-api-wpp">Confirmar</a>
                 <button class="btn-del" data-id="${id}">X</button>
             </div>
         `;
@@ -145,50 +144,39 @@ function abrirPainelAdmin() {
     });
 
     container.querySelectorAll('.btn-del').forEach(btn => {
-        btn.onclick = () => {
-            if(confirm("Excluir reserva?")) remove(ref(db, `agendamentos/${btn.dataset.id}`));
-        };
+        btn.onclick = () => { if(confirm("Excluir reserva?")) remove(ref(db, `agendamentos/${btn.dataset.id}`)); };
     });
 
     document.getElementById('fat-hoje').innerText = `R$ ${hojeTotal}`;
     document.getElementById('fat-mes').innerText = `R$ ${mesTotal}`;
 }
 
-// Listeners
+// Listeners de navegação
 document.getElementById('btn-iniciar').onclick = () => mudarTela('step1');
-
+document.getElementById('btn-voltar-home').onclick = () => mudarTela('step-home');
 document.getElementById('btn-ir-servicos').onclick = () => {
     agendamento.barbeiro = document.getElementById('barbeiro').value;
     agendamento.data = inputData.value;
     mudarTela('step2');
 };
-
 document.getElementById('btn-ir-horarios').onclick = () => {
-    const servicoAtivo = document.querySelector('input[name="corte"]:checked');
-    agendamento.servico = servicoAtivo.value;
-    agendamento.valor = servicoAtivo.dataset.valor;
+    const servico = document.querySelector('input[name="corte"]:checked');
+    agendamento.servico = servico.value;
+    agendamento.valor = servico.dataset.valor;
     gerarGradeHorarios();
     mudarTela('step3');
 };
-
 document.getElementById('btn-finalizar').onclick = finalizar;
-
-// Navegação de Voltar
-document.getElementById('btn-voltar-home').onclick = () => mudarTela('step-home');
-document.getElementById('btn-voltar-etapa1').onclick = () => mudarTela('step1');
-document.getElementById('btn-voltar-etapa2').onclick = () => mudarTela('step2');
-document.getElementById('btn-voltar-etapa3').onclick = () => mudarTela('step3');
+document.querySelectorAll('[id^="btn-voltar-etapa"]').forEach(btn => {
+    btn.onclick = () => mudarTela('step' + (parseInt(btn.id.slice(-1)) - 1));
+});
 document.getElementById('btn-sair-admin').onclick = () => mudarTela('step-home');
 
-// Gatilho Admin
+// Gatilho Admin (5 cliques no logo)
 document.getElementById('logo-admin').onclick = () => {
     seqAdmin++;
     if (seqAdmin === 5) {
         seqAdmin = 0;
-        const p = prompt("Senha de acesso:");
-        if (p === "1234") {
-            mudarTela('step-admin');
-            abrirPainelAdmin();
-        }
+        if (prompt("Senha de acesso:") === "1234") { mudarTela('step-admin'); abrirPainelAdmin(); }
     }
 };
