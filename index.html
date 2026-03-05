@@ -30,7 +30,6 @@
                     <option value="João">João</option>
                 </select>
             </div>
-
             <div class="card">
                 <label>Data do Atendimento</label>
                 <input type="date" id="data-agendamento">
@@ -46,48 +45,37 @@
                     <label class="service-card">
                         <input type="radio" name="corte" value="Corte Degradê" data-valor="30" checked>
                         <div class="card-content">
-                            <div class="img-container">
-                                <img src="https://i.ibb.co/gFVDb325/degrad.png" alt="Corte Degradê">
-                            </div>
+                            <div class="img-container"><img src="https://i.ibb.co/gFVDb325/degrad.png" alt="Degradê"></div>
                             <div class="service-info">
                                 <span class="service-name">Degradê</span>
                                 <span class="service-price">R$ 30,00</span>
                             </div>
                         </div>
                     </label>
-
                     <label class="service-card">
                         <input type="radio" name="corte" value="Nevou" data-valor="100">
                         <div class="card-content">
-                            <div class="img-container">
-                                <img src="https://i.ibb.co/1GHR4wHy/nevou.png" alt="Nevou">
-                            </div>
+                            <div class="img-container"><img src="https://i.ibb.co/1GHR4wHy/nevou.png" alt="Nevou"></div>
                             <div class="service-info">
                                 <span class="service-name">Nevou + Corte</span>
                                 <span class="service-price">R$ 100,00</span>
                             </div>
                         </div>
                     </label>
-
                     <label class="service-card">
                         <input type="radio" name="corte" value="Corte + Barba" data-valor="50">
                         <div class="card-content">
-                            <div class="img-container">
-                                <img src="https://i.ibb.co/m55s3x7d/corte-barba.png" alt="Corte e Barba">
-                            </div>
+                            <div class="img-container"><img src="https://i.ibb.co/m55s3x7d/corte-barba.png" alt="Barba"></div>
                             <div class="service-info">
                                 <span class="service-name">Corte + Barba</span>
                                 <span class="service-price">R$ 50,00</span>
                             </div>
                         </div>
                     </label>
-
                     <label class="service-card">
                         <input type="radio" name="corte" value="Corte Social" data-valor="30">
                         <div class="card-content">
-                            <div class="img-container">
-                                <img src="https://i.ibb.co/Q3bx5BHr/CORTE-SOCIAL.png" alt="Corte Social">
-                            </div>
+                            <div class="img-container"><img src="https://i.ibb.co/Q3bx5BHr/CORTE-SOCIAL.png" alt="Social"></div>
                             <div class="service-info">
                                 <span class="service-name">Corte Social</span>
                                 <span class="service-price">R$ 30,00</span>
@@ -102,7 +90,7 @@
         <section id="step3" class="step">
             <button class="btn-back" id="btn-voltar-etapa2">← Voltar</button>
             <div class="card">
-                <h3 id="titulo-horario" style="margin-bottom: 15px; color: var(--primary);">Horários</h3>
+                <h3 id="titulo-horario" style="margin-bottom: 15px; color: var(--primary);">Horários Disponíveis</h3>
                 <div id="grid-horarios" class="grid-horarios"></div>
             </div>
         </section>
@@ -112,10 +100,8 @@
             <div class="card">
                 <h3>Resumo do Agendamento</h3>
                 <div id="resumo-final" class="resumo-box"></div>
-                
                 <label>Nome Completo</label>
                 <input type="text" id="nome-cliente" placeholder="Como devemos te chamar?">
-                
                 <label>WhatsApp (com DDD)</label>
                 <input type="text" id="tel-cliente" placeholder="Ex: 11999999999">
             </div>
